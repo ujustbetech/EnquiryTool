@@ -31,42 +31,41 @@ const ViewQRPage = () => {
     fetchEvent();
   }, [eventId]);
 
-  const formatTime = (timestamp) => {
+  const formatDateOnly = (timestamp) => {
     if (!timestamp?.seconds) return "-";
-    return format(new Date(timestamp.seconds * 1000), "dd/MM/yyyy HH:mm");
+    return format(
+      new Date(timestamp.seconds * 1000),
+      "dd/MM/yyyy"
+    );
   };
 
-const downloadPDF = async () => {
-  try {
-    const builderName = event.builder || event.name || "QR";
-    const start = formatTime(event.startTime);
-    const end = formatTime(event.endTime);
+  const downloadPDF = async () => {
+    try {
+      const title = event.eventName || "QR";
+      const start = formatDateOnly(event.startDate);
 
-    const pdf = new jsPDF();
+      const pdf = new jsPDF();
 
-    // Title
-    pdf.setFontSize(18);
-    pdf.text(builderName, 105, 20, { align: "center" });
+      // Title
+      pdf.setFontSize(18);
+      pdf.text(title, 105, 20, { align: "center" });
 
-    pdf.setFontSize(12);
-    pdf.text(`Start: ${start}`, 20, 35);
-    pdf.text(`End: ${end}`, 20, 45);
+      pdf.setFontSize(12);
+      pdf.text(`Start Date: ${start}`, 20, 35);
 
-    // 🔥 FORCE production domain
-    const eventLink = `https://capturing-tool.vercel.app/events/${eventId}`;
+      // 🔥 Production domain
+      const eventLink = `https://capturing-tool.vercel.app/events/${eventId}`;
+      const qrDataUrl = await QRCode.toDataURL(eventLink);
 
-    const qrDataUrl = await QRCode.toDataURL(eventLink);
+      pdf.addImage(qrDataUrl, "PNG", 55, 55, 100, 100);
 
-    pdf.addImage(qrDataUrl, "PNG", 55, 60, 100, 100);
+      pdf.save(`${title.replace(/\s+/g, "_")}.pdf`);
 
-    pdf.save(`${builderName}.pdf`);
-
-  } catch (error) {
-    console.error(error);
-    alert("Failed to generate PDF.");
-  }
-};
-
+    } catch (error) {
+      console.error(error);
+      alert("Failed to generate PDF.");
+    }
+  };
 
   if (!event) return <p style={{ padding: "40px" }}>Loading...</p>;
 
@@ -84,10 +83,12 @@ const downloadPDF = async () => {
           background: "#ffffff"
         }}
       >
-        <h3>{event.builder || event.name}</h3>
+        <h3>{event.eventName}</h3>
 
-        <p><strong>Start:</strong> {formatTime(event.startTime)}</p>
-        <p><strong>End:</strong> {formatTime(event.endTime)}</p>
+        <p>
+          <strong>Start Date:</strong>{" "}
+          {formatDateOnly(event.startDate)}
+        </p>
 
         {event.qrCodeUrl ? (
           <img
