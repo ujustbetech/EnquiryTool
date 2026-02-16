@@ -209,24 +209,28 @@ const RegisteredUsers = () => {
               )}
 
               {/* SERVICES */}
-              <li className='form-row'>
-                <h4>Services *</h4>
-                <select
-                  value={services}
-                  onChange={(e) => {
-                    setServices(e.target.value);
-                    setOtherService('');
-                  }}
-                >
-                  <option value="">Select Service</option>
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                  <option value="E">E</option>
-                  <option value="Other">Other</option>
-                </select>
-              </li>
+      <li className='form-row'>
+  <h4>Services *</h4>
+  <select
+    value={services}
+    onChange={(e) => {
+      setServices(e.target.value);
+      setOtherService('');
+    }}
+  >
+    <option value="">Select Service</option>
+    <option value="Packers and Movers">Packers and Movers</option>
+    <option value="CCTV">CCTV</option>
+    <option value="Pest Control">Pest Control</option>
+    <option value="AC Servicing and Installation">
+      AC Servicing and Installation
+    </option>
+    <option value="Wall Paper and Flooring">
+      Wall Paper and Flooring
+    </option>
+    <option value="Other">Other</option>
+  </select>
+</li>
 
               {services === "Other" && (
                 <li className='form-row'>

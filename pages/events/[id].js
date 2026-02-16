@@ -251,28 +251,33 @@ const EventLoginPage = () => {
           )}
 
           {/* SERVICES */}
-          <div className="input-group">
-            <label>Services</label>
-            <select
-              value={formData.services}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  services: e.target.value,
-                  otherService: "",
-                })
-              }
-            >
-              <option value="">Select Service</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-              <option value="D">D</option>
-              <option value="E">E</option>
-              <option value="Other">Other</option>
-            </select>
-            {errors.services && <span>{errors.services}</span>}
-          </div>
+   <div className="input-group">
+  <label>Services</label>
+  <select
+    value={formData.services}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        services: e.target.value,
+        otherService: "",
+      })
+    }
+  >
+    <option value="">Select Service</option>
+    <option value="Packers and Movers">Packers and Movers</option>
+    <option value="CCTV">CCTV</option>
+    <option value="Pest Control">Pest Control</option>
+    <option value="AC Servicing and Installation">
+      AC Servicing and Installation
+    </option>
+    <option value="Wall Paper and Flooring">
+      Wall Paper and Flooring
+    </option>
+    <option value="Other">Other</option>
+  </select>
+
+  {errors.services && <span>{errors.services}</span>}
+</div>
 
           {formData.services === "Other" && (
             <div className="input-group">
