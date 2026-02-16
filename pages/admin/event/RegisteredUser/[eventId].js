@@ -5,7 +5,6 @@ import {
   getDocs,
   doc,
   setDoc,
-  getDoc,
   Timestamp,
 } from 'firebase/firestore';
 import { useRouter } from 'next/router';
@@ -23,10 +22,12 @@ const RegisteredUsers = () => {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [bhk, setBhk] = useState('');
+  const [otherBhk, setOtherBhk] = useState('');
+  const [services, setServices] = useState('');
+  const [otherService, setOtherService] = useState('');
   const [comment, setComment] = useState('');
-  const [subcategory, setSubcategory] = useState('');
 
-  const enquiryType = "Packers & Movers"; // default
+  const enquiryType = "Packers & Movers";
 
   useEffect(() => {
     if (!eventId) return;
@@ -48,9 +49,9 @@ const RegisteredUsers = () => {
             name: data.name || 'N/A',
             phoneNumber: data.phoneNumber || 'N/A',
             bhk: data.bhk || 'N/A',
+            services: data.services || 'N/A',
             comment: data.comment || 'N/A',
             enquiryType: data.enquiryType || 'N/A',
-            subcategory: data.subcategory || 'N/A',
             registeredAt:
               data.registeredAt?.toDate().toLocaleString() || 'N/A',
           };
@@ -86,8 +87,18 @@ const RegisteredUsers = () => {
       return;
     }
 
-    if (!subcategory) {
-      setError('Please select subcategory.');
+    if (bhk === "Other" && !otherBhk.trim()) {
+      setError('Please specify BHK.');
+      return;
+    }
+
+    if (!services) {
+      setError('Please select service.');
+      return;
+    }
+
+    if (services === "Other" && !otherService.trim()) {
+      setError('Please specify service.');
       return;
     }
 
@@ -103,10 +114,10 @@ const RegisteredUsers = () => {
       await setDoc(userRef, {
         name,
         phoneNumber,
-        bhk,
+        bhk: bhk === "Other" ? otherBhk : bhk,
+        services: services === "Other" ? otherService : services,
         comment,
         enquiryType,
-        subcategory,
         registeredAt: Timestamp.now(),
       });
 
@@ -115,8 +126,10 @@ const RegisteredUsers = () => {
       setName('');
       setPhoneNumber('');
       setBhk('');
+      setOtherBhk('');
+      setServices('');
+      setOtherService('');
       setComment('');
-      setSubcategory('');
 
     } catch (err) {
       console.error(err);
@@ -128,13 +141,11 @@ const RegisteredUsers = () => {
     <Layout>
       <section className='c-userslist box'>
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}
-        >
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
           <h3>Registered Users</h3>
           <ExportToExcel eventId={eventId} />
         </div>
@@ -155,7 +166,6 @@ const RegisteredUsers = () => {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
                 />
               </li>
 
@@ -165,49 +175,69 @@ const RegisteredUsers = () => {
                   type="text"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  required
                 />
               </li>
 
+              {/* BHK */}
               <li className='form-row'>
                 <h4>BHK *</h4>
                 <select
                   value={bhk}
-                  onChange={(e) => setBhk(e.target.value)}
-                  required
+                  onChange={(e) => {
+                    setBhk(e.target.value);
+                    setOtherBhk('');
+                  }}
                 >
-                  <option value="">Select BHK</option>
+                  <option value="">Select Option</option>
                   <option value="1 BHK">1 BHK</option>
                   <option value="2 BHK">2 BHK</option>
-                  <option value="3 BHK">3 BHK</option>
-                  <option value="4 BHK">4 BHK</option>
+                  <option value="Shop">Shop</option>
+                  <option value="Garage">Garage</option>
+                  <option value="Other">Other</option>
                 </select>
               </li>
 
-              <li className='form-row'>
-                <h4>Enquiry</h4>
-                <input
-                  type="text"
-                  value={enquiryType}
-                  disabled
-                />
-              </li>
+              {bhk === "Other" && (
+                <li className='form-row'>
+                  <h4>Specify BHK</h4>
+                  <input
+                    type="text"
+                    value={otherBhk}
+                    onChange={(e) => setOtherBhk(e.target.value)}
+                  />
+                </li>
+              )}
 
+              {/* SERVICES */}
               <li className='form-row'>
-                <h4>Subcategory *</h4>
+                <h4>Services *</h4>
                 <select
-                  value={subcategory}
-                  onChange={(e) => setSubcategory(e.target.value)}
-                  required
+                  value={services}
+                  onChange={(e) => {
+                    setServices(e.target.value);
+                    setOtherService('');
+                  }}
                 >
-                  <option value="">Select Subcategory</option>
+                  <option value="">Select Service</option>
                   <option value="A">A</option>
                   <option value="B">B</option>
                   <option value="C">C</option>
                   <option value="D">D</option>
                   <option value="E">E</option>
+                  <option value="Other">Other</option>
                 </select>
               </li>
+
+              {services === "Other" && (
+                <li className='form-row'>
+                  <h4>Specify Service</h4>
+                  <input
+                    type="text"
+                    value={otherService}
+                    onChange={(e) => setOtherService(e.target.value)}
+                  />
+                </li>
+              )}
 
               <li className='form-row'>
                 <h4>Comment</h4>
@@ -236,8 +266,7 @@ const RegisteredUsers = () => {
               <th>Name</th>
               <th>Phone</th>
               <th>BHK</th>
-              <th>Enquiry</th>
-              <th>Subcategory</th>
+              <th>Services</th>
               <th>Comment</th>
               <th>Registered At</th>
             </tr>
@@ -251,15 +280,16 @@ const RegisteredUsers = () => {
                   <td>{user.name}</td>
                   <td>{user.phoneNumber}</td>
                   <td>{user.bhk}</td>
-                  <td>{user.enquiryType}</td>
-                  <td>{user.subcategory}</td>
+                  <td>{user.services}</td>
                   <td>{user.comment}</td>
                   <td>{user.registeredAt}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8">No users registered for this event.</td>
+                <td colSpan="7">
+                  No users registered for this event.
+                </td>
               </tr>
             )}
           </tbody>

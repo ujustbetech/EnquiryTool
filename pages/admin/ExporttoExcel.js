@@ -16,11 +16,11 @@ const ExportToExcel = ({ eventId }) => {
         return;
       }
 
-      // ✅ Get event name for file naming
+      // ✅ Get event name (updated field)
       const eventRef = doc(db, 'Enquiry', eventId);
       const eventSnap = await getDoc(eventRef);
       const eventName = eventSnap.exists()
-        ? eventSnap.data().name || 'Event'
+        ? eventSnap.data().eventName || 'Event'
         : 'Event';
 
       // ✅ Get registered users
@@ -37,14 +37,14 @@ const ExportToExcel = ({ eventId }) => {
         return;
       }
 
-      // ✅ Convert to array and sort by latest first
+      // ✅ Sort latest first
       const sortedDocs = snapshot.docs.sort((a, b) => {
         const dateA = a.data().registeredAt?.seconds || 0;
         const dateB = b.data().registeredAt?.seconds || 0;
-        return dateB - dateA; // latest first
+        return dateB - dateA;
       });
 
-      // ✅ Prepare data
+      // ✅ Prepare Excel Data
       const data = sortedDocs.map((docSnap, index) => {
         const d = docSnap.data();
 
@@ -74,19 +74,20 @@ const ExportToExcel = ({ eventId }) => {
           SrNo: index + 1,
           Name: d.name || '',
           PhoneNumber: d.phoneNumber || '',
-          FlatNo: d.flatNo || '',
-          Wing: d.wing || '',
-          Builder: d.builder || '',
+          BHK: d.bhk || '',
+          Services: d.services || '',
+          Comment: d.comment || '',
+          EnquiryType: d.enquiryType || '',
           RegisteredAt: formattedDate,
         };
       });
 
-      // ✅ Create Excel sheet
+      // ✅ Create Excel Sheet
       const worksheet = XLSX.utils.json_to_sheet(data);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Registered Users');
 
-      // ✅ File name with today date
+      // ✅ File name with today's date
       const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
       const fileName = `${eventName.replace(/\s+/g, '_')}_${today}.xlsx`;
 

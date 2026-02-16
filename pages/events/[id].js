@@ -20,7 +20,9 @@ const EventLoginPage = () => {
     name: "",
     phone: "",
     bhk: "",
-    subcategory: "",
+    otherBhk: "",
+    services: "",
+    otherService: "",
     comment: "",
   });
 
@@ -60,46 +62,32 @@ const EventLoginPage = () => {
 
   // ---------------- VALIDATION ----------------
 
-  const validateField = (name, value) => {
-    let message = "";
-
-    if (name === "name" && !value.trim())
-      message = "Full name is required";
-
-    if (name === "phone") {
-      if (!value) message = "Phone number is required";
-      else if (!/^[0-9]{10}$/.test(value))
-        message = "Enter valid 10 digit phone number";
-    }
-
-    if (name === "bhk" && !value)
-      message = "Please select BHK";
-
-    if (name === "subcategory" && !value)
-      message = "Please select subcategory";
-
-    setErrors((prev) => ({ ...prev, [name]: message }));
-    return message === "";
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    validateField(name, value);
-  };
-
   const validateForm = () => {
-    const results = [
-      validateField("name", formData.name),
-      validateField("phone", formData.phone),
-      validateField("bhk", formData.bhk),
-      validateField("subcategory", formData.subcategory),
-    ];
-    return results.every((item) => item === true);
+    let newErrors = {};
+
+    if (!formData.name.trim())
+      newErrors.name = "Full name is required";
+
+    if (!formData.phone)
+      newErrors.phone = "Phone number is required";
+    else if (!/^[0-9]{10}$/.test(formData.phone))
+      newErrors.phone = "Enter valid 10 digit phone number";
+
+    if (!formData.bhk)
+      newErrors.bhk = "Please select BHK";
+
+    if (formData.bhk === "Other" && !formData.otherBhk.trim())
+      newErrors.otherBhk = "Please specify BHK";
+
+    if (!formData.services)
+      newErrors.services = "Please select service";
+
+    if (formData.services === "Other" && !formData.otherService.trim())
+      newErrors.otherService = "Please specify service";
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
   };
 
   // ---------------- SUBMIT ----------------
@@ -124,7 +112,6 @@ const EventLoginPage = () => {
           icon: "info",
           title: "Already Registered",
           text: "This phone number is already registered.",
-          confirmButtonColor: "#16274f",
         });
         return;
       }
@@ -132,9 +119,15 @@ const EventLoginPage = () => {
       await setDoc(userRef, {
         name: formData.name,
         phoneNumber: formData.phone,
-        bhk: formData.bhk,
+        bhk:
+          formData.bhk === "Other"
+            ? formData.otherBhk
+            : formData.bhk,
         enquiryType,
-        subcategory: formData.subcategory,
+        services:
+          formData.services === "Other"
+            ? formData.otherService
+            : formData.services,
         comment: formData.comment,
         registeredAt: serverTimestamp(),
       });
@@ -142,14 +135,15 @@ const EventLoginPage = () => {
       Swal.fire({
         icon: "success",
         title: "Registration Successful!",
-        confirmButtonColor: "#16274f",
       });
 
       setFormData({
         name: "",
         phone: "",
         bhk: "",
-        subcategory: "",
+        otherBhk: "",
+        services: "",
+        otherService: "",
         comment: "",
       });
 
@@ -190,94 +184,134 @@ const EventLoginPage = () => {
           {registeredUserCount} people registered
         </div>
 
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit}>
 
+          {/* NAME */}
           <div className="input-group">
             <label>Full Name</label>
             <input
-              name="name"
               value={formData.name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={errors.name ? "error-input" : ""}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
             />
-            {errors.name && (
-              <span className="error-message">{errors.name}</span>
-            )}
+            {errors.name && <span>{errors.name}</span>}
           </div>
 
+          {/* PHONE */}
           <div className="input-group">
             <label>Contact Number</label>
             <input
-              name="phone"
               maxLength="10"
               value={formData.phone}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={errors.phone ? "error-input" : ""}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
             />
-            {errors.phone && (
-              <span className="error-message">{errors.phone}</span>
-            )}
+            {errors.phone && <span>{errors.phone}</span>}
           </div>
 
+          {/* BHK */}
           <div className="input-group">
             <label>BHK</label>
             <select
-              name="bhk"
               value={formData.bhk}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={errors.bhk ? "error-input" : ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  bhk: e.target.value,
+                  otherBhk: "",
+                })
+              }
             >
-              <option value="">Select BHK</option>
+              <option value="">Select Option</option>
               <option value="1 BHK">1 BHK</option>
               <option value="2 BHK">2 BHK</option>
-              <option value="3 BHK">3 BHK</option>
-              <option value="4 BHK">4 BHK</option>
+              <option value="Shop">Shop</option>
+              <option value="Garage">Garage</option>
+              <option value="Other">Other</option>
             </select>
-            {errors.bhk && (
-              <span className="error-message">{errors.bhk}</span>
-            )}
+            {errors.bhk && <span>{errors.bhk}</span>}
           </div>
 
+          {formData.bhk === "Other" && (
+            <div className="input-group">
+              <label>Please Specify BHK</label>
+              <input
+                value={formData.otherBhk}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    otherBhk: e.target.value,
+                  })
+                }
+              />
+              {errors.otherBhk && <span>{errors.otherBhk}</span>}
+            </div>
+          )}
+
+          {/* SERVICES */}
           <div className="input-group">
-            <label>Subcategory</label>
+            <label>Services</label>
             <select
-              name="subcategory"
-              value={formData.subcategory}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={errors.subcategory ? "error-input" : ""}
+              value={formData.services}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  services: e.target.value,
+                  otherService: "",
+                })
+              }
             >
-              <option value="">Select Subcategory</option>
+              <option value="">Select Service</option>
               <option value="A">A</option>
               <option value="B">B</option>
               <option value="C">C</option>
               <option value="D">D</option>
               <option value="E">E</option>
+              <option value="Other">Other</option>
             </select>
-            {errors.subcategory && (
-              <span className="error-message">{errors.subcategory}</span>
-            )}
+            {errors.services && <span>{errors.services}</span>}
           </div>
 
+          {formData.services === "Other" && (
+            <div className="input-group">
+              <label>Please Specify Service</label>
+              <input
+                value={formData.otherService}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    otherService: e.target.value,
+                  })
+                }
+              />
+              {errors.otherService && <span>{errors.otherService}</span>}
+            </div>
+          )}
+
+          {/* COMMENT */}
           <div className="input-group">
             <label>Comment</label>
             <textarea
-              name="comment"
               rows="3"
               value={formData.comment}
-              onChange={handleChange}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  comment: e.target.value,
+                })
+              }
             />
           </div>
 
+          {/* ENQUIRY TYPE */}
           <div className="input-group">
             <label>Enquiry Type</label>
             <input value={enquiryType} disabled readOnly />
           </div>
 
-          <button className="submitbtns">
+          <button type="submit" className="submitbtns">
             Submit Registration
           </button>
 
