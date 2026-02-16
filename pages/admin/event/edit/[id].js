@@ -4,14 +4,12 @@ import { doc, getDoc, updateDoc, Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import Layout from '../../../../component/Layout';
 
-
 const EditEvent = () => {
   const router = useRouter();
   const { id } = router.query;
 
   const [eventName, setEventName] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+  const [startDate, setStartDate] = useState('');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -28,21 +26,13 @@ const EditEvent = () => {
         if (eventSnapshot.exists()) {
           const data = eventSnapshot.data();
 
-          setEventName(data.name || '');
+          setEventName(data.eventName || '');
 
-          setStartTime(
-            data.startTime
-              ? new Date(data.startTime.seconds * 1000)
+          setStartDate(
+            data.startDate
+              ? new Date(data.startDate.seconds * 1000)
                   .toISOString()
-                  .slice(0, 16)
-              : ''
-          );
-
-          setEndTime(
-            data.endTime
-              ? new Date(data.endTime.seconds * 1000)
-                  .toISOString()
-                  .slice(0, 16)
+                  .slice(0, 10) // date only
               : ''
           );
         } else {
@@ -64,13 +54,8 @@ const EditEvent = () => {
     setError('');
     setSuccess('');
 
-    if (!eventName || !startTime || !endTime) {
+    if (!eventName || !startDate) {
       setError('Please fill in all required fields.');
-      return;
-    }
-
-    if (new Date(startTime) >= new Date(endTime)) {
-      setError('End time must be after start time.');
       return;
     }
 
@@ -78,9 +63,8 @@ const EditEvent = () => {
       const eventDocRef = doc(db, 'Enquiry', id);
 
       await updateDoc(eventDocRef, {
-        name: eventName,
-        startTime: Timestamp.fromDate(new Date(startTime)),
-        endTime: Timestamp.fromDate(new Date(endTime)),
+        eventName: eventName,
+        startDate: Timestamp.fromDate(new Date(startDate)),
       });
 
       setSuccess('Event updated successfully!');
@@ -100,7 +84,10 @@ const EditEvent = () => {
       <section className='c-form box'>
         <h2>Edit Event</h2>
 
-        <button className="m-button-5" onClick={() => window.history.back()}>
+        <button
+          className="m-button-5"
+          onClick={() => window.history.back()}
+        >
           Back
         </button>
 
@@ -121,21 +108,11 @@ const EditEvent = () => {
               </li>
 
               <li className='form-row'>
-                <h4>Start Date & Time *</h4>
+                <h4>Start Date *</h4>
                 <input
-                  type="datetime-local"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  required
-                />
-              </li>
-
-              <li className='form-row'>
-                <h4>End Date & Time *</h4>
-                <input
-                  type="datetime-local"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
                   required
                 />
               </li>
