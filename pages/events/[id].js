@@ -60,6 +60,47 @@ const EventLoginPage = () => {
     setRegisteredUserCount(snapshot.size);
   };
 
+  // ✅ WhatsApp Template Sender (Added Only)
+  const sendWhatsAppTemplateMessage = async (name, phone) => {
+    try {
+      const response = await fetch(
+        "https://graph.facebook.com/v19.0/527476310441806/messages",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer EAAHwbR1fvgsBOwUInBvR1SGmVLSZCpDZAkn9aZCDJYaT0h5cwyiLyIq7BnKmXAgNs0ZCC8C33UzhGWTlwhUarfbcVoBdkc1bhuxZBXvroCHiXNwZCZBVxXlZBdinVoVnTB7IC1OYS4lhNEQprXm5l0XZAICVYISvkfwTEju6kV4Aqzt4lPpN8D3FD7eIWXDhnA4SG6QZDZD`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            to: `91${phone}`,
+            type: "template",
+            template: {
+              name: "oremeet_thankyoumessage",
+              language: { code: "en" },
+              components: [
+                {
+                  type: "body",
+                  parameters: [
+                    {
+                      type: "text",
+                      text: name,
+                    },
+                  ],
+                },
+              ],
+            },
+          }),
+        }
+      );
+
+      const data = await response.json();
+      console.log("WhatsApp Response:", data);
+    } catch (error) {
+      console.error("WhatsApp send error:", error);
+    }
+  };
+
   // ---------------- VALIDATION ----------------
 
   const validateForm = () => {
@@ -131,6 +172,12 @@ const EventLoginPage = () => {
         comment: formData.comment,
         registeredAt: serverTimestamp(),
       });
+
+      // ✅ SEND WHATSAPP TEMPLATE AFTER SUCCESS
+      await sendWhatsAppTemplateMessage(
+        formData.name,
+        formData.phone
+      );
 
       Swal.fire({
         icon: "success",
@@ -251,33 +298,32 @@ const EventLoginPage = () => {
           )}
 
           {/* SERVICES */}
-   <div className="input-group">
-  <label>Services</label>
-  <select
-    value={formData.services}
-    onChange={(e) =>
-      setFormData({
-        ...formData,
-        services: e.target.value,
-        otherService: "",
-      })
-    }
-  >
-    <option value="">Select Service</option>
-    <option value="Packers and Movers">Packers and Movers</option>
-    <option value="CCTV">CCTV</option>
-    <option value="Pest Control">Pest Control</option>
-    <option value="AC Servicing and Installation">
-      AC Servicing and Installation
-    </option>
-    <option value="Wall Paper and Flooring">
-      Wall Paper and Flooring
-    </option>
-    <option value="Other">Other</option>
-  </select>
-
-  {errors.services && <span>{errors.services}</span>}
-</div>
+          <div className="input-group">
+            <label>Services</label>
+            <select
+              value={formData.services}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  services: e.target.value,
+                  otherService: "",
+                })
+              }
+            >
+              <option value="">Select Service</option>
+              <option value="Packers and Movers">Packers and Movers</option>
+              <option value="CCTV">CCTV</option>
+              <option value="Pest Control">Pest Control</option>
+              <option value="AC Servicing and Installation">
+                AC Servicing and Installation
+              </option>
+              <option value="Wall Paper and Flooring">
+                Wall Paper and Flooring
+              </option>
+              <option value="Other">Other</option>
+            </select>
+            {errors.services && <span>{errors.services}</span>}
+          </div>
 
           {formData.services === "Other" && (
             <div className="input-group">
