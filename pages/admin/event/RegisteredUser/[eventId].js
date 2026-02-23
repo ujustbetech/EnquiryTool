@@ -23,7 +23,7 @@ const RegisteredUsers = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [bhk, setBhk] = useState('');
   const [otherBhk, setOtherBhk] = useState('');
-  const [services, setServices] = useState('');
+  const [services, setServices] = useState([]);
   const [otherService, setOtherService] = useState('');
   const [comment, setComment] = useState('');
 
@@ -92,12 +92,15 @@ const RegisteredUsers = () => {
       return;
     }
 
-    if (!services) {
-      setError('Please select service.');
+    if (services.length === 0) {
+      setError('Please select at least one service.');
       return;
     }
 
-    if (services === "Other" && !otherService.trim()) {
+    if (
+      services.includes("Other") &&
+      !otherService.trim()
+    ) {
       setError('Please specify service.');
       return;
     }
@@ -115,7 +118,12 @@ const RegisteredUsers = () => {
         name,
         phoneNumber,
         bhk: bhk === "Other" ? otherBhk : bhk,
-        services: services === "Other" ? otherService : services,
+        services: services.includes("Other")
+          ? [
+              ...services.filter((s) => s !== "Other"),
+              otherService,
+            ]
+          : services,
         comment,
         enquiryType,
         registeredAt: Timestamp.now(),
@@ -127,7 +135,7 @@ const RegisteredUsers = () => {
       setPhoneNumber('');
       setBhk('');
       setOtherBhk('');
-      setServices('');
+      setServices([]);
       setOtherService('');
       setComment('');
 
@@ -153,7 +161,6 @@ const RegisteredUsers = () => {
         {error && <p style={{ color: 'red' }}>{error}</p>}
         {success && <p style={{ color: 'green' }}>{success}</p>}
 
-        {/* Admin Add Form */}
         <section className='c-form box'>
           <h2>Add New Lead</h2>
 
@@ -178,7 +185,6 @@ const RegisteredUsers = () => {
                 />
               </li>
 
-              {/* BHK */}
               <li className='form-row'>
                 <h4>BHK *</h4>
                 <select
@@ -208,31 +214,49 @@ const RegisteredUsers = () => {
                 </li>
               )}
 
-              {/* SERVICES */}
-      <li className='form-row'>
-  <h4>Services *</h4>
-  <select
-    value={services}
-    onChange={(e) => {
-      setServices(e.target.value);
-      setOtherService('');
-    }}
-  >
-    <option value="">Select Service</option>
-    <option value="Packers and Movers">Packers and Movers</option>
-    <option value="CCTV">CCTV</option>
-    <option value="Pest Control">Pest Control</option>
-    <option value="AC Servicing and Installation">
-      AC Servicing and Installation
-    </option>
-    <option value="Wall Paper and Flooring">
-      Wall Paper and Flooring
-    </option>
-    <option value="Other">Other</option>
-  </select>
-</li>
+              <li className='form-row'>
+                <h4>Services *</h4>
 
-              {services === "Other" && (
+                <div className="multi-select-box">
+
+                  {[
+                    "Packers and Movers",
+                    "CCTV",
+                    "Pest Control",
+                    "AC Servicing and Installation",
+                    "Wall Paper and Flooring",
+                    "Other",
+                  ].map((service) => (
+                    <label
+                      key={service}
+                      className={`service-card ${
+                        services.includes(service) ? "active" : ""
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        value={service}
+                        checked={services.includes(service)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setServices([...services, service]);
+                          } else {
+                            setServices(
+                              services.filter((s) => s !== service)
+                            );
+                            setOtherService('');
+                          }
+                        }}
+                      />
+                      <span>{service}</span>
+                      <div className="checkmark">✓</div>
+                    </label>
+                  ))}
+
+                </div>
+              </li>
+
+              {services.includes("Other") && (
                 <li className='form-row'>
                   <h4>Specify Service</h4>
                   <input
@@ -262,7 +286,6 @@ const RegisteredUsers = () => {
           </form>
         </section>
 
-        {/* Users Table */}
         <table className='table-class' style={{ marginTop: '2rem' }}>
           <thead>
             <tr>
@@ -284,7 +307,11 @@ const RegisteredUsers = () => {
                   <td>{user.name}</td>
                   <td>{user.phoneNumber}</td>
                   <td>{user.bhk}</td>
-                  <td>{user.services}</td>
+                  <td>
+                    {Array.isArray(user.services)
+                      ? user.services.join(', ')
+                      : user.services}
+                  </td>
                   <td>{user.comment}</td>
                   <td>{user.registeredAt}</td>
                 </tr>
