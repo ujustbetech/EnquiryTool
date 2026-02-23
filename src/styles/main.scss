@@ -97,7 +97,127 @@ body{
 .submitbtn:active {
   transform: translateY(0);
 }
+/* MULTI SELECT CONTAINER */
 
+.multi-select-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #0d6efd;
+  border-radius: 12px;
+  background: #f4f8ff;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* CARD STYLE */
+
+.service-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: white;
+  border: 1px solid #dce6ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* HIDE DEFAULT CHECKBOX */
+
+.service-card input {
+  display: none;
+}
+
+/* HOVER */
+
+.service-card:hover {
+  background: #eef4ff;
+}
+
+/* SELECTED */
+
+.service-card.active {
+  background: #e07c0a;
+  color: white;
+  border: 1px solid #e07c0a;
+  box-shadow: 0 0 10px rgba(13, 110, 253, 0.6);
+  transform: scale(1.02);
+}
+
+/* TEXT */
+
+.service-card span {
+  pointer-events: none;
+}
+
+/* SCROLLBAR */
+
+.multi-select-box::-webkit-scrollbar {
+  width: 5px;
+}
+
+.multi-select-box::-webkit-scrollbar-thumb {
+  background: #e07c0a;
+  border-radius: 10px;
+}
+
+/* MOBILE RESPONSIVE */
+
+@media (max-width: 768px) {
+  .multi-select-box {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .service-card {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+/* TICK MARK */
+
+.checkmark {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  color: #e07c0a;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0);
+  transition: 0.25s ease;
+}
+
+/* SHOW WHEN ACTIVE */
+
+.service-card.active .checkmark {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* MOBILE ADJUSTMENT */
+
+@media (max-width: 768px) {
+  .checkmark {
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    top: 4px;
+    right: 6px;
+  }
+}
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .form-row {

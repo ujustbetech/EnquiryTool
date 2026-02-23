@@ -21,7 +21,7 @@ const EventLoginPage = () => {
     phone: "",
     bhk: "",
     otherBhk: "",
-    services: "",
+    services: [],
     otherService: "",
     comment: "",
   });
@@ -60,7 +60,6 @@ const EventLoginPage = () => {
     setRegisteredUserCount(snapshot.size);
   };
 
-  // ✅ WhatsApp Template Sender (Added Only)
   const sendWhatsAppTemplateMessage = async (name, phone) => {
     try {
       const response = await fetch(
@@ -101,8 +100,6 @@ const EventLoginPage = () => {
     }
   };
 
-  // ---------------- VALIDATION ----------------
-
   const validateForm = () => {
     let newErrors = {};
 
@@ -120,18 +117,19 @@ const EventLoginPage = () => {
     if (formData.bhk === "Other" && !formData.otherBhk.trim())
       newErrors.otherBhk = "Please specify BHK";
 
-    if (!formData.services)
-      newErrors.services = "Please select service";
+    if (formData.services.length === 0)
+      newErrors.services = "Please select at least one service";
 
-    if (formData.services === "Other" && !formData.otherService.trim())
+    if (
+      formData.services.includes("Other") &&
+      !formData.otherService.trim()
+    )
       newErrors.otherService = "Please specify service";
 
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
   };
-
-  // ---------------- SUBMIT ----------------
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -165,15 +163,16 @@ const EventLoginPage = () => {
             ? formData.otherBhk
             : formData.bhk,
         enquiryType,
-        services:
-          formData.services === "Other"
-            ? formData.otherService
-            : formData.services,
+        services: formData.services.includes("Other")
+          ? [
+              ...formData.services.filter((s) => s !== "Other"),
+              formData.otherService,
+            ]
+          : formData.services,
         comment: formData.comment,
         registeredAt: serverTimestamp(),
       });
 
-      // ✅ SEND WHATSAPP TEMPLATE AFTER SUCCESS
       await sendWhatsAppTemplateMessage(
         formData.name,
         formData.phone
@@ -189,7 +188,7 @@ const EventLoginPage = () => {
         phone: "",
         bhk: "",
         otherBhk: "",
-        services: "",
+        services: [],
         otherService: "",
         comment: "",
       });
@@ -233,7 +232,6 @@ const EventLoginPage = () => {
 
         <form onSubmit={handleSubmit}>
 
-          {/* NAME */}
           <div className="input-group">
             <label>Full Name</label>
             <input
@@ -245,7 +243,6 @@ const EventLoginPage = () => {
             {errors.name && <span>{errors.name}</span>}
           </div>
 
-          {/* PHONE */}
           <div className="input-group">
             <label>Contact Number</label>
             <input
@@ -258,7 +255,6 @@ const EventLoginPage = () => {
             {errors.phone && <span>{errors.phone}</span>}
           </div>
 
-          {/* BHK */}
           <div className="input-group">
             <label>BHK</label>
             <select
@@ -297,35 +293,57 @@ const EventLoginPage = () => {
             </div>
           )}
 
-          {/* SERVICES */}
-          <div className="input-group">
-            <label>Services</label>
-            <select
-              value={formData.services}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  services: e.target.value,
-                  otherService: "",
-                })
-              }
-            >
-              <option value="">Select Service</option>
-              <option value="Packers and Movers">Packers and Movers</option>
-              <option value="CCTV">CCTV</option>
-              <option value="Pest Control">Pest Control</option>
-              <option value="AC Servicing and Installation">
-                AC Servicing and Installation
-              </option>
-              <option value="Wall Paper and Flooring">
-                Wall Paper and Flooring
-              </option>
-              <option value="Other">Other</option>
-            </select>
-            {errors.services && <span>{errors.services}</span>}
-          </div>
+       <div className="input-group">
+  <label>Services</label>
 
-          {formData.services === "Other" && (
+ <div className="multi-select-box">
+
+  {[
+    "Packers and Movers",
+    "CCTV",
+    "Pest Control",
+    "AC Servicing and Installation",
+    "Wall Paper and Flooring",
+    "Other",
+  ].map((service) => (
+    <label
+      key={service}
+      className={`service-card ${
+        formData.services.includes(service) ? "active" : ""
+      }`}
+    >
+      <input
+        type="checkbox"
+        value={service}
+        checked={formData.services.includes(service)}
+        onChange={(e) => {
+          if (e.target.checked) {
+            setFormData({
+              ...formData,
+              services: [...formData.services, service],
+            });
+          } else {
+            setFormData({
+              ...formData,
+              services: formData.services.filter(
+                (s) => s !== service
+              ),
+              otherService: "",
+            });
+          }
+        }}
+      />
+   <span>{service}</span>
+<div className="checkmark">✓</div>
+    </label>
+  ))}
+
+</div>
+
+  {errors.services && <span className="error">{errors.services}</span>}
+</div>
+
+          {formData.services.includes("Other") && (
             <div className="input-group">
               <label>Please Specify Service</label>
               <input
@@ -341,7 +359,6 @@ const EventLoginPage = () => {
             </div>
           )}
 
-          {/* COMMENT */}
           <div className="input-group">
             <label>Comment</label>
             <textarea
@@ -356,7 +373,6 @@ const EventLoginPage = () => {
             />
           </div>
 
-          {/* ENQUIRY TYPE */}
           <div className="input-group">
             <label>Enquiry Type</label>
             <input value={enquiryType} disabled readOnly />
